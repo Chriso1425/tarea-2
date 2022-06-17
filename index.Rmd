@@ -22,18 +22,18 @@ library(readxl)
 
 # Datos
 
-```{r carga, message=FALSE}
+```{r carga, message=FALSE, echo=FALSE}
 delitos_oij <-
   readxl::read_excel("C:/Users/corti/OneDrive/Documents/OIJ/estadisticaspoliciales2021.xls")
 ```
 
-```{r}
+```{r, message=FALSE, echo=FALSE}
 delitos_oij$Fecha <- as.Date(delitos_oij$Fecha, format("%Y/%m/%d"))
 ```
 
 # Tabla
 
-```{r}
+```{r select, message=FALSE, echo=FALSE}
 delitos_oij <-
   delitos_oij %>%
   dplyr::select(Delito, Fecha, Victima, Edad, Genero, Provincia, Canton)
@@ -71,15 +71,15 @@ ggplotly(grafico_delitos)
 
 ### Cantidad de delitos por mes
 
-```{r}
-meses_delitos <- delitos_oij %>% mutate(Meses  = lubridate::month(Fecha))
+```{r conversion, message=FALSE, echo=FALSE}
+meses_delitos <- delitos_oij %>% mutate(Meses  = lubridate::month(Fecha, label = TRUE))
 ```
 
 ```{r grafico-meses, message=FALSE, echo=FALSE}
 grafico_delitos_mes <-
   meses_delitos %>%
   count(Meses) %>%
-  ggplot(aes(x = reorder(Meses, -n), y = n)) +
+  ggplot(aes(x = reorder(Meses, n), y = n)) +
   geom_bar(stat = "identity") +
   ggtitle("Cantidad de delitos por mes") +
   xlab("Mes") +
