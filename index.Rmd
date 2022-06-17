@@ -1,0 +1,120 @@
+---
+title: "Tarea 2"
+author: "Christopher Ortiz Gonzalez"
+date: '2022-06-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Carga de Paquetes
+
+```{r paquetes, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(DT)
+library(lubridate)
+library(readxl)
+```
+
+# Datos
+
+```{r carga, message=FALSE}
+delitos_oij <-
+  readxl::read_excel("C:/Users/corti/OneDrive/Documents/OIJ/estadisticaspoliciales2021.xls")
+```
+
+```{r}
+delitos_oij$Fecha <- as.Date(delitos_oij$Fecha, format("%Y/%m/%d"))
+```
+
+# Tabla
+
+```{r tabla, message=FALSE, echo=FALSE}
+delitos_oij %>%
+  datatable(options = list(
+    pageLength = 10,
+    language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+  ))
+```
+
+# Graficos
+
+### Cantidad de delitos por tipo de delito
+
+```{r grafico-delitos, message=FALSE, echo=FALSE}
+delitos_oij %>%
+  count(Delito)
+
+grafico_delitos <-
+  delitos_oij %>%
+  count(Delito) %>%
+  ggplot(aes(x = reorder(Delito, n), y = n)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Cantidad de delitos por tipo de delito") +
+  xlab("Cantidad de delitos") +
+  ylab("Delitos") +
+  coord_flip() +
+  theme_minimal()
+
+ggplotly(grafico_delitos)
+```
+
+### Cantidad de delitos por mes
+
+```{r}
+meses_delitos <- delitos_oij %>% mutate(Meses  = lubridate::month(Fecha))
+```
+
+```{r grafico-meses, message=FALSE, echo=FALSE}
+grafico_delitos_mes <-
+  meses_delitos %>%
+  count(Meses) %>%
+  ggplot(aes(x = reorder(Meses, -n), y = n)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Cantidad de delitos por mes") +
+  xlab("Mes") +
+  ylab("Cantidad de delitos") +
+  theme_minimal()
+
+ggplotly(grafico_delitos_mes)
+```
+
+### Cantidad de delitos por canton
+
+```{r grafico-cantones, message=FALSE, echo=FALSE}
+grafico_delitos_canton <-
+  delitos_oij %>%
+  count(Canton) %>%
+  filter(Canton == "SAN JOSE" |
+         Canton == "ALAJUELA" |
+         Canton == "CARTAGO" | Canton == "HEREDIA") %>%
+  ggplot(aes(x = reorder(Canton, -n), y = n)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Delitos por canton") +
+  xlab("Canton") +
+  ylab("Cantidad delitos") +
+  theme_minimal()
+
+ggplotly(grafico_delitos_canton)
+```
+
+### Proporción de delitos por genero
+
+```{r grafico-apilada, message=FALSE, echo=FALSE}
+grafico_apilado_genero <-
+  delitos_oij %>%
+  ggplot(aes(x = Genero, fill = Delito)) +
+  geom_bar(position = "fill") +
+  ggtitle("Proporciones de delitos por genero") +
+  xlab("Género") +
+  ylab("Proporcion") +
+  labs(fill = "Delitos") +
+  theme_minimal()
+
+ggplotly(grafico_apilado_genero) %>% config(locale = "es")
+```
+
